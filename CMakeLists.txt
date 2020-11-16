@@ -69,6 +69,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # LIBRARIES ( opencv_core opencv_highgui opencv_imgproc opencv_videoio )
 
+find_library(TENSORFLOW_LIB tensorflow HINT /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/lib)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+
+
+
 set(OpenCV_DIR "/Users/rustomichhaporia/GitHub/build_opencv")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -109,16 +117,19 @@ ci_make_app(
         # BLOCKS          Cinder-OpenCV-master 
 )   
 
-set_target_properties(maskade-visualizer
-    PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED YES
-        CXX_EXTENSIONS YES
-        C_STANDARD 11
-)	
+# set_target_properties(maskade-visualizer
+#     PROPERTIES
+#         CXX_STANDARD 11
+#         CXX_STANDARD_REQUIRED YES
+#         CXX_EXTENSIONS YES
+#         C_STANDARD 11
+# )	
 
 target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
 target_link_libraries(maskade-visualizer ${OpenCV_LIBS})
+
+target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow/include/ /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
+target_link_libraries (maskade-visualizer "${TENSORFLOW_LIB}")
 
 
 # ci_make_app(
