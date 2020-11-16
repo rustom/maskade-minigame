@@ -1,24 +1,17 @@
 # set(CMAKE_C_COMPILER /usr/bin/gcc)
 # set(CMAKE_CXX_COMPILER /usr/bin/g++)
+if(APPLE)
+  set(CMAKE_FIND_FRAMEWORK LAST)
+  set(CMAKE_FIND_APPBUNDLE LAST)
+endif()
 
 cmake_minimum_required(VERSION 3.1.3)
 project(ideal-gas VERSION 0.1.0)
 
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_C_STANDARD 18)
-# set(CMAKE_C_STANDARD_REQUIRED ON)
-
-
-# set(CMAKE_CXX_FLAGS "-DENABLE_CXX11=ON --std=c++11 --std=c11")
-
-# set(CMAKE_BUILD_TYPE Debug)
-
-# set(CMAKE_CXX_EXTENSIONS ON)
-# set(CMAKE_C_EXTENSIONS ON)
-
-# set(CMAKE_REQUIRED_FLAGS "-DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++")
-
+# if(APPLE)
+# set(CMAKE_FIND_FRAMEWORK LAST)
+# set(CMAKE_FIND_APPBUNDLE LAST)
+# endif()
 
 # Let's nicely support folders in IDE's
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
