@@ -45,8 +45,6 @@ int main()
     // std::cout << "hello";
     std::cout << output << std::endl;
 
-    // return 0;
-
     cout << "Built with OpenCV " << CV_VERSION << endl;
     cv::Mat image;
     VideoCapture capture;
