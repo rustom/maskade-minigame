@@ -1,8 +1,2 @@
-assets
-include
-resources
-src
-xcode
-apps
+.vscode
 build
-blocks
