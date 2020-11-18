@@ -117,29 +117,19 @@ ci_make_app(
         # BLOCKS          Cinder-OpenCV-master 
 )   
 
-# set_target_properties(maskade-visualizer
-#     PROPERTIES
-#         CXX_STANDARD 11
-#         CXX_STANDARD_REQUIRED YES
-#         CXX_EXTENSIONS YES
-#         C_STANDARD 11
-# )	
-
 target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
 target_link_libraries(maskade-visualizer ${OpenCV_LIBS})
 
 target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow/include/ /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
 target_link_libraries (maskade-visualizer "${TENSORFLOW_LIB}")
 
-
 # ci_make_app(
-#         APP_NAME        ideal-gas-test
+#         APP_NAME        maskade-test
 #         CINDER_PATH     ${CINDER_PATH}
 #         SOURCES         test/test_main.cc ${CORE_SOURCE_FILES} ${TEST_FILES}
 #         INCLUDES        include
 #         LIBRARIES       Catch2 
 # )
-
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
