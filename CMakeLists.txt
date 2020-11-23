@@ -120,7 +120,7 @@ ci_make_app(
 target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
 target_link_libraries(maskade-visualizer ${OpenCV_LIBS})
 
-target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow/include/ /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
+target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow2/include/ /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
 target_link_libraries (maskade-visualizer "${TENSORFLOW_LIB}")
 
 # ci_make_app(

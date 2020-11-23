@@ -1,5 +1,5 @@
-// The include statements below are intentionally long, but will be shortened when
-// I flesh out more of the code
+// The include statements below are intentionally long, but will be shortened
+// when I flesh out more of the code
 
 // #include "cinder/app/App.h"
 // #include "cinder/app/RendererGl.h"
@@ -36,9 +36,10 @@ int main() {
   // Read in a sample image (hopefully, this will later be from the camera feed)
   auto input = cppflow::decode_jpeg(cppflow::read_file(
       std::string("/Users/rustomichhaporia/GitHub/Cinder/my-projects/"
-                  "final-project-rustom-ichhaporia/assets/photo.jpeg")));
+                  "final-project-rustom-ichhaporia/assets/photo2.jpeg")));
 
-  // Cast the datatype of the input, expand dimensions, and change size to match the image size of the model
+  // Cast the datatype of the input, expand dimensions, and change size to match
+  // the image size of the model
   input = cppflow::cast(input, TF_UINT8, TF_INT32);
   input = cppflow::expand_dims(input, 0);
   std::cout << input.shape();
@@ -46,8 +47,8 @@ int main() {
   input = cppflow::resize_bilinear(input, cppflow::tensor(il));
   std::cout << input.shape();
 
-  // Load in the saved model built online with Google's Teachable Machines project
-  // https://teachablemachine.withgoogle.com/train
+  // Load in the saved model built online with Google's Teachable Machines
+  // project https://teachablemachine.withgoogle.com/train
   cppflow::model model(
       "/Users/rustomichhaporia/GitHub/Cinder/my-projects/"
       "final-project-rustom-ichhaporia/assets/converted_savedmodel/"
@@ -60,12 +61,16 @@ int main() {
   }
 
   // Output the prediction from the model
-  auto output = model(input);
+  auto    output = model(input);
   std::cout << output;
 
-  // The code below connects OpenCV binaries built locally to the laptop's camera feed
-  // Some code is taken from online OpenCV examples for proof of concept
-  // This can only be done in superuser mode on VS code
+  return 0;
+
+  // The code below connects OpenCV binaries built locally to the laptop's
+  // camera feed Some code is taken from online OpenCV examples for proof of
+  // concept This can only be done in superuser mode on VS code
+
+  int IMG_SIZE = 224;
 
   std::cout << output << std::endl;
 
@@ -73,27 +78,60 @@ int main() {
   cv::Mat image;
   VideoCapture capture;
   capture.open(0);
-  if(capture.isOpened())
-  {
-      cout << "Capture is opened" << endl;
-      for(;;)
-      {
-          capture >> image;
-          if(image.empty())
-              break;
-          drawText(image);
-          imshow("Sample", image);
-          if(waitKey(10) >= 0)
-              break;
-      }
-  }
-  else
-  {
-      cout << "No capture" << endl;
-      image = Mat::zeros(480, 640, CV_8UC1);
+  if (capture.isOpened()) {
+    cout << "Capture is opened" << endl;
+    for (size_t i = 0; i < 1; ++i) {
+      capture >> image;
+      std::cout << image.size;
+      //   image.reshape(0, std::vector<int>{224,224});
+      //   std::cout << image.size;
+      cv::resize(image, image, cv::Size(224, 224));
+      image.convertTo(image, CV_32F, 1.0/255.0);
+      std::cout << image.size;
+      // std::cout << image;
+      int rows = image.rows;
+int cols = image.cols;
+int channels = image.channels();
+int total = image.total();
+Mat flat = image.reshape(1, image.total() * channels);
+
+std::vector<float> img_data(IMG_SIZE*IMG_SIZE*3);
+img_data = image.isContinuous()? flat : flat.clone();
+// img_data = flat;
+// for (auto item : img_data) {
+//   std::cout << item << ",";
+// }
+// Feed data to input tensor
+// input.set_data(img_data, {1, rows, cols, channels});
+
+// cppflow::tensor ten = cppflow::tensor(img_data);
+
+// Run and show predictions
+cppflow::tensor tensor(img_data, {1, rows, cols, channels});
+auto output_2 = model(tensor);
+std::cout << "This is the prediction" << output_2;  
+
+// // Get tensor with predictions
+// std::vector<float> predictions = prediction.Tensor::get_data<float>();
+// for(int i=0; i<predictions.size(); i++)
+//     std::cout<< std::to_string(predictions[i]) << std::endl;
+
+      // cppflow::tensor ten = inp;
+
+
+      if (image.empty())
+        break;
       drawText(image);
       imshow("Sample", image);
-      waitKey(0);
+      if (waitKey(10) >= 0)
+        break;
+    }
+  } else {
+    cout << "No capture" << endl;
+    image = Mat::zeros(480, 640, CV_8UC1);
+    drawText(image);
+    imshow("Sample", image);
+    waitKey(0);
   }
   return 0;
 }
@@ -105,8 +143,8 @@ void drawText(Mat& image) {
           1, LINE_AA);            // line thickness and type
 }
 
-// The commented code below is the skeleton for the integration of the Cinder app with 
-// TensorFlow and OpenCV
+// The commented code below is the skeleton for the integration of the Cinder
+// app with TensorFlow and OpenCV
 
 // using namespace ci;
 // using namespace ci::app;
