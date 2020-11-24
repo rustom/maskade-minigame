@@ -86,12 +86,14 @@ int main() {
       // for (size_t i = 0; i < 1; ++i) {
       capture >> image;
       // cv::flip(image, image, 1);
-      image = image(cv::Rect(540, 360, IMG_SIZE, IMG_SIZE));
+      // image = image(cv::Rect(540, 360, IMG_SIZE, IMG_SIZE));
 
       imshow("Sample", image);
 
       std::cout << image.size;
       image.convertTo(image, CV_32F);
+      cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+      image /= 255.f;
 
       // Image dimensions
       int rows = image.rows;
@@ -114,7 +116,9 @@ int main() {
       }
       cppflow::tensor tensor(img_data, {1, rows, cols, channels});
       std::cout << tensor.dtype();
-      tensor = tensor/255.f;
+      // tensor = tensor/255.f;
+      auto dims = {224, 224};
+  tensor = cppflow::resize_bilinear(tensor, cppflow::tensor(dims));
 
       // auto il = {224, 224};
       // input = cppflow::resize_bilinear(tensor, cppflow::tensor(il));
