@@ -34,13 +34,15 @@ void drawText(Mat& image);
 
 int main() {
   // Read in a sample image (hopefully, this will later be from the camera feed)
-  auto input = cppflow::decode_jpeg(cppflow::read_file(
+  cppflow::tensor input = cppflow::decode_jpeg(cppflow::read_file(
       std::string("/Users/rustomichhaporia/GitHub/Cinder/my-projects/"
-                  "final-project-rustom-ichhaporia/assets/photo2.jpeg")));
+                  "final-project-rustom-ichhaporia/assets/photo3.jpeg")));
 
+  std::cout << input;
   // Cast the datatype of the input, expand dimensions, and change size to match
   // the image size of the model
-  input = cppflow::cast(input, TF_UINT8, TF_INT32);
+  input = cppflow::cast(input, TF_UINT8, TF_FLOAT);
+  input = input / 255.f;
   input = cppflow::expand_dims(input, 0);
   std::cout << input.shape();
   auto il = {224, 224};
@@ -55,16 +57,16 @@ int main() {
       "model.savedmodel");
 
   // Print list of possible operations on the Tensor model
-  std::vector<std::string> ops = model.get_operations();
-  for (auto item : ops) {
-    std::cout << item << std::endl << std::endl;
-  }
+  // std::vector<std::string> ops = model.get_operations();
+  // for (auto item : ops) {
+  //   std::cout << item << std::endl << std::endl;
+  // }
 
   // Output the prediction from the model
-  auto    output = model(input);
+  auto output = model(input);
   std::cout << output;
 
-  return 0;
+  // return 0;
 
   // The code below connects OpenCV binaries built locally to the laptop's
   // camera feed Some code is taken from online OpenCV examples for proof of
@@ -80,49 +82,88 @@ int main() {
   capture.open(0);
   if (capture.isOpened()) {
     cout << "Capture is opened" << endl;
-    for (size_t i = 0; i < 1; ++i) {
+    for (;;) {
+      // for (size_t i = 0; i < 1; ++i) {
       capture >> image;
+      // cv::flip(image, image, 1);
+      image = image(cv::Rect(540, 360, IMG_SIZE, IMG_SIZE));
+
+      imshow("Sample", image);
+
       std::cout << image.size;
-      //   image.reshape(0, std::vector<int>{224,224});
-      //   std::cout << image.size;
-      cv::resize(image, image, cv::Size(224, 224));
-      image.convertTo(image, CV_32F, 1.0/255.0);
-      std::cout << image.size;
-      // std::cout << image;
+      image.convertTo(image, CV_32F);
+
+      // Image dimensions
       int rows = image.rows;
-int cols = image.cols;
-int channels = image.channels();
-int total = image.total();
-Mat flat = image.reshape(1, image.total() * channels);
+      int cols = image.cols;
+      int channels = image.channels();
+      int total = image.total();
 
-std::vector<float> img_data(IMG_SIZE*IMG_SIZE*3);
-img_data = image.isContinuous()? flat : flat.clone();
-// img_data = flat;
-// for (auto item : img_data) {
-//   std::cout << item << ",";
-// }
-// Feed data to input tensor
-// input.set_data(img_data, {1, rows, cols, channels});
+      std::cout << rows << ", " << cols << ", " << channels << ", " << total;
 
-// cppflow::tensor ten = cppflow::tensor(img_data);
+      // Assign to vector for 3 channel image
+      // Souce: https://stackoverflow.com/a/56600115/2076973
+      Mat flat = image.reshape(1, image.total() * channels);
 
-// Run and show predictions
-cppflow::tensor tensor(img_data, {1, rows, cols, channels});
-auto output_2 = model(tensor);
-std::cout << "This is the prediction" << output_2;  
+      std::vector<float> img_data(IMG_SIZE * IMG_SIZE * 3);
+      img_data = image.isContinuous()? flat : flat.clone();
+      std::cout << std::endl;
+      for(size_t i = 0; i < 20; ++i) {
+        std::cout << img_data[i] << ",";
+        
+      }
+      cppflow::tensor tensor(img_data, {1, rows, cols, channels});
+      std::cout << tensor.dtype();
+      tensor = tensor/255.f;
 
-// // Get tensor with predictions
-// std::vector<float> predictions = prediction.Tensor::get_data<float>();
-// for(int i=0; i<predictions.size(); i++)
-//     std::cout<< std::to_string(predictions[i]) << std::endl;
+      // auto il = {224, 224};
+      // input = cppflow::resize_bilinear(tensor, cppflow::tensor(il));
+
+      auto output_2 = model(tensor);
+      
+      std::cout << "This is the prediction" << output_2;
+
+      // std::cout << image;
+      // cvtColor(image, image, CV_RGB);
+      // std::cout << (float*)image.data;
+      // std::cout << image.
+
+      // std::vector<float> array((float*)image.data, (float*)image.data + image.rows * image.cols);
+      // std::cout << array.size() << std::endl;
+ 
+      // std::cout << image.size;
+      // //   image.reshape(0, std::vector<int>{224,224});
+      // //   std::cout << image.size;
+      // cv::resize(image, image, cv::Size(224, 224));
+      // image.convertTo(image, CV_32F, 1.0/255.0);
+      // std::cout << image.size;
+      // std::cout << image;
+      // int rows = image.rows;
+      // int cols = image.cols;
+      // int channels = image.channels();
+      // int total = image.total();
+      // Mat flat = image.reshape(1, image.total() * channels);
+      // Mat flat = image;
+
+      // std::vector<float> img_data;
+      // img_data = image.isContinuous() ? flat : flat.clone();
+
+      // Run and show predictions
+      // cppflow::tensor tensor(img_data, {1, rows, cols, channels});
+      // auto output_2 = model(image);
+      // std::cout << "This is the prediction" << output_2;
+
+      // // Get tensor with predictions
+      // std::vector<float> predictions = prediction.Tensor::get_data<float>();
+      // for(int i=0; i<predictions.size(); i++)
+      //     std::cout<< std::to_string(predictions[i]) << std::endl;
 
       // cppflow::tensor ten = inp;
-
 
       if (image.empty())
         break;
       drawText(image);
-      imshow("Sample", image);
+      // imshow("Sample", image);
       if (waitKey(10) >= 0)
         break;
     }
