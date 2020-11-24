@@ -93,6 +93,7 @@ get_filename_component(APP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/" ABSOLUTE)
 include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
 include("/Users/rustomichhaporia/GitHub/Cinder/lib/macosx/DEBUG/cinderConfig.cmake")
 list(APPEND CORE_SOURCE_FILES   
+    src/maskade_classifier.cpp
     # src/core/particle_container.cc
     # src/core/particle.cc
     # src/core/histogram.cc
@@ -112,7 +113,7 @@ list(APPEND TEST_FILES
 ci_make_app(
         APP_NAME        maskade-visualizer
         CINDER_PATH     ${CINDER_PATH}
-        SOURCES         apps/maskade_visualizer.cpp ${CORE_SOURCE_FILES} ${VISUALIZER_SOURCE_FILES}
+        SOURCES         apps/maskade_app.cpp ${CORE_SOURCE_FILES} ${VISUALIZER_SOURCE_FILES}
         INCLUDES        include  # blocks/Cinder-OpenCV-master/include
         # BLOCKS          Cinder-OpenCV-master 
 )   
