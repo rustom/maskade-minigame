@@ -45,41 +45,6 @@ class MaskadeClassifier : public ci::app::App {
 
 }
 
-
-
-// The commented code below is the skeleton for the integration of the Cinder
-// app with TensorFlow and OpenCV
-
-// using namespace ci;
-// using namespace ci::app;
-// using namespace std;
-
-// class finalprojectApp : public App {
-//   public:
-// 	void setup() override;
-// 	void mouseDown( MouseEvent event ) override;
-// 	void update() override;
-// 	void draw() override;
-
-// };
-
-// void finalprojectApp::setup()
-// {
-// }
-
-// void finalprojectApp::mouseDown( MouseEvent event )
-// {
-// }
-
-// void finalprojectApp::update()
-// {
-// }
-
-// void finalprojectApp::draw()
-// {
-// 	gl::clear( Color( 0, 0, 0 ) );
-// }
-
 // void drawText(Mat& image) {
 //   putText(image, "Hello OpenCV", cv::Point(20, 50), FONT_HERSHEY_COMPLEX,
 //           1,                      // font face and scale
