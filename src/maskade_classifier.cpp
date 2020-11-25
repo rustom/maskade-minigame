@@ -1,4 +1,7 @@
 #include "maskade_classifier.hpp"
+#include "CinderOpenCV.hpp"
+
+#include "cinder/gl/gl.h"
 
 namespace maskade {
 
@@ -126,7 +129,7 @@ void MaskadeClassifier::setup() {
 }
 
 void MaskadeClassifier::mouseDown(ci::app::MouseEvent event) {
-
+  // Run();
 }
 
 void MaskadeClassifier::update() {
@@ -134,7 +137,23 @@ void MaskadeClassifier::update() {
 }
 
 void MaskadeClassifier::draw() {
-  Run();
+  // Run();
+  cv::VideoCapture capture;
+  capture.open(0);
+  cv::Mat image;
+  capture >> image;
+
+
+  // ci::Surface8u surface( loadImage( loadAsset( "dfw.jpg" ) ) );
+	// cv::Mat input( toOcv( surface ) );
+	// cv::Mat output;
+
+	// cv::medianBlur( input, output, 11 );
+//	cv::Sobel( input, output, CV_8U, 0, 1 ); 
+//	cv::threshold( input, output, 128, 255, CV_8U );
+
+	ci::gl::TextureRef mTexture = ci::gl::Texture::create( ci::fromOcv( image ) );
+  ci::gl::draw(mTexture);
 }
 
 }  // namespace maskade

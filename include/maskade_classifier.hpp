@@ -1,5 +1,10 @@
 #pragma once
 
+#   include <opencv2/stitching/detail/blenders.hpp>
+#   include <opencv2/stitching/detail/exposure_compensate.hpp>
+#include "opencv2/opencv.hpp"
+
+
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
@@ -20,6 +25,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/video/video.hpp"
 #include "opencv2/videoio.hpp"
+
+
 using cv::FONT_HERSHEY_COMPLEX;
 using cv::LINE_AA;
 using cv::Mat;
