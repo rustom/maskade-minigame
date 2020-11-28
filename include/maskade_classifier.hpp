@@ -1,60 +1,54 @@
 #pragma once
 
-#   include <opencv2/stitching/detail/blenders.hpp>
-#   include <opencv2/stitching/detail/exposure_compensate.hpp>
+// This header MUST be included first (do not reorder includes)
 #include "opencv2/opencv.hpp"
-
-
+#include <string>
 #include "cinder/app/App.h"
-#include "cinder/app/RendererGl.h"
-#include "cinder/gl/gl.h"
-
-#include <iostream>
-#include <opencv2/videoio.hpp>
-
 #include "cppflow/cppflow.h"
-#include "cppflow/model.h"
-#include "cppflow/ops.h"
-#include "opencv2/core.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/core/mat.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgcodecs/imgcodecs.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/videoio.hpp"
 
 
-using cv::FONT_HERSHEY_COMPLEX;
-using cv::LINE_AA;
-using cv::Mat;
-using cv::Scalar;
-using cv::VideoCapture;
-using cv::waitKey;
-using std::cout;
-using std::endl;
-
-namespace maskade { 
+namespace maskade {
 
 class MaskadeClassifier : public ci::app::App {
- public: 
+ public:
+  /**
+   * @brief Default constructor that initializes the model using the model path. 
+   *
+   */
   MaskadeClassifier();
-  void Run();
+
+  /**
+   * @brief Sets up configuration file variables and opens camera for Cinder. 
+   * 
+   */
   void setup() override;
-  void mouseDown(ci::app::MouseEvent event) override;
+
+  /**
+   * @brief Reads in a new image from the camera every time the Cinder app updates. 
+   * 
+   */
   void update() override;
+
+  /**
+   * @brief Calls the appropriate functions to draw the camera feed and classification on the Cinder app. 
+   * 
+   */
   void draw() override;
+
  private:
-  
+  /**
+   * @brief Opens the laptop camera for video access. 
+   * 
+   */
+  void OpenCamera();
+
+  std::string config_path_ = "../../../../../../config/config.json";
+  std::string model_path_ =
+      "../../../../../../assets/converted_savedmodel/model.savedmodel";
+  cppflow::model model_;
+  cv::VideoCapture capture_;
+  cv::Mat image_;
+  std::string font_name_;
 };
 
-}
-
-// void drawText(Mat& image) {
-//   putText(image, "Hello OpenCV", cv::Point(20, 50), FONT_HERSHEY_COMPLEX,
-//           1,                      // font face and scale
-//           Scalar(255, 255, 255),  // white
-//           1, LINE_AA);            // line thickness and type
-// }
+}  // namespace maskade
