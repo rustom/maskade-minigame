@@ -1,4 +1,6 @@
 {
-  "text_color": "0x000000",
-  "font": "IBM Plex Mono"
+  "model_image_width": 224, 
+  "model_image_height": 224,
+  "font": "IBM Plex Mono",
+  "font_color": "0xffa984"
 }
