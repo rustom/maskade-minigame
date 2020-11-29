@@ -65,7 +65,7 @@ class MaskadeClassifier : public ci::app::App {
    * the user's mask status.
    *
    */
-  float CalculatePrediction();
+  int CalculatePrediction();
 
   /**
    * @brief Draws the appropriate message to the Cinder app based on the model's
@@ -73,6 +73,20 @@ class MaskadeClassifier : public ci::app::App {
    *
    */
   void DrawPrediction(int prediction_class);
+
+  void DrawScore();
+
+  void DrawTextBox();
+
+  void DrawMinigameBox();
+
+  void DrawMinigameWinScreen();
+
+  /**
+   * @brief Executes one loop of the minigame, incrementing the score if necessary. 
+   * 
+   */
+  void ExecuteMinigameStep(int prediction);
 
   // Relative path to the configuration JSON
   std::string config_path_ = "../../../../../../config/config.json";
@@ -103,6 +117,12 @@ class MaskadeClassifier : public ci::app::App {
   bool in_minigame_ = false;
   // An int representing the score of the player in the minigame
   int minigame_score_ = 0;
+  // The amount of time the user gets to play the minigame
+  int minigame_max_time_ = 10;
+  // A timer for the minigame 
+  ci::Timer minigame_timer_;
+  // The amount of time the win screen is displayed after the minigame
+  int minigame_win_screen_time_ = 4;
 };
 
 }  // namespace maskade

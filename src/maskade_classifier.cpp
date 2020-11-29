@@ -25,6 +25,8 @@ void MaskadeClassifier::setup() {
   model_image_width_ = config["model_image_width"].get<int>();
   model_image_height_ = config["model_image_height"].get<int>();
 
+  minigame_max_time_ = config["minigame_max_time"].get<int>();
+
   // Begin collecting video
   OpenCamera();
 }
@@ -40,26 +42,47 @@ void MaskadeClassifier::update() {
 
 void MaskadeClassifier::draw() {
   // Executes the drawing and calculation heartbeat functions
-
   DrawImage();
+
+  DrawTextBox();
 
   int prediction = CalculatePrediction();
 
-  DrawPrediction(prediction);
+  if (in_minigame_) {
+    ExecuteMinigameStep(prediction);
+    DrawScore(); 
+    if (minigame_timer_.getSeconds() >= minigame_max_time_) {
+      DrawMinigameWinScreen();
+    }    
+    if (minigame_timer_.getSeconds() >= minigame_max_time_ + minigame_win_screen_time_) {
+      minigame_timer_.start(0);
+      minigame_score_ = 0;
+    }
+  }
+
+  else {
+    DrawPrediction(prediction); 
+  }
 }
 
 void MaskadeClassifier::keyDown(ci::app::KeyEvent event) {
   switch (event.getCode()) {
     case ci::app::KeyEvent::KEY_m: {
       in_minigame_ = (in_minigame_) ? false : true;
+      // minigame_timer_ = (in_minigame_) ? minigame_max_time_ : 0.0;
+      if (in_minigame_) {
+        minigame_timer_.start(0);
+      } 
+      minigame_score_ = 0;
       break;
     }
     case ci::app::KeyEvent::KEY_r: {
-      // Reset the minigame
+      // Resets the minigame score and time
+      minigame_timer_.start(0);
+      minigame_score_ = 0;
       break;
     }
     case ci::app::KeyEvent::KEY_p: {
-
       break;
     }
   }
@@ -91,18 +114,21 @@ void MaskadeClassifier::OpenCamera() {
 }
 
 void MaskadeClassifier::DrawImage() {
-  // Create separate Mat that is resized for drawing to the app's full dimensions
+  // Create separate Mat that is resized for drawing to the app's full
+  // dimensions
   cv::Mat full_window_image;
 
-  cv::resize(image_, full_window_image, cv::Size(ci::app::getWindowWidth(), ci::app::getWindowHeight()));
+  cv::resize(image_, full_window_image,
+             cv::Size(ci::app::getWindowWidth(), ci::app::getWindowHeight()));
 
   // Creates Cinder texture from OpenCV Mat
-  ci::gl::TextureRef texture = ci::gl::Texture::create(ci::fromOcv(full_window_image));
+  ci::gl::TextureRef texture =
+      ci::gl::Texture::create(ci::fromOcv(full_window_image));
   // Draw texture on the Cinder app
   ci::gl::draw(texture);
 }
 
-float MaskadeClassifier::CalculatePrediction() {
+int MaskadeClassifier::CalculatePrediction() {
   // Switches the color schema of the image form BGR (openCV native format) to
   // RGB (TensorFlow native format)
   cv::cvtColor(image_, image_, cv::COLOR_BGR2RGB);
@@ -135,9 +161,44 @@ float MaskadeClassifier::CalculatePrediction() {
 }
 
 void MaskadeClassifier::DrawPrediction(int prediction_class) {
+  // Determine message based on calculated classification
+  std::string prediction_line = (prediction_class == 0)
+                                    ? "Hey, your mask isn't on!"
+                                    : "Thank you for wearing your mask!";
+
+  ci::gl::drawStringCentered(
+      prediction_line,
+      glm::vec2(ci::app::getWindowWidth() / 2,
+                ci::app::getWindowHeight() * 9 / 10),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 20));
+}
+
+void MaskadeClassifier::DrawScore() {
+      std::string score_line =
+        "Score points by keeping your mask on! Your score is: " +
+        std::to_string(minigame_score_);
+
+    ci::gl::drawStringCentered(
+        score_line,
+        glm::vec2(ci::app::getWindowWidth() / 2,
+                  ci::app::getWindowHeight() * 8.5 / 10),
+        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
+
+    std::string time_line = "Seconds left: " + std::to_string(minigame_max_time_ - (int) minigame_timer_.getSeconds());
+
+    ci::gl::drawStringCentered(
+        time_line,
+        glm::vec2(ci::app::getWindowWidth() / 2,
+                  ci::app::getWindowHeight() * 9.5 / 10),
+        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
+}
+
+void MaskadeClassifier::DrawTextBox() {
   // Draw background box so text can more easily be seen
-  ci::Rectf text_box(glm::vec2(ci::app::getWindowWidth() * 1 / 10, ci::app::getWindowHeight() * 8 / 10),
-                     glm::vec2(ci::app::getWindowWidth() * 9 / 10, ci::app::getWindowHeight()));
+  ci::Rectf text_box(glm::vec2(ci::app::getWindowWidth() * 1 / 10,
+                               ci::app::getWindowHeight() * 8 / 10),
+                     glm::vec2(ci::app::getWindowWidth() * 9 / 10,
+                               ci::app::getWindowHeight()));
 
   // Dark grey box
   ci::gl::color(text_box_color_);
@@ -146,20 +207,34 @@ void MaskadeClassifier::DrawPrediction(int prediction_class) {
   // Reset brush for drawing images
   ci::gl::color(ci::ColorT<float>().hex(0xffffff));
 
-  // Determine message based on calculated classification
-  std::string prediction_line = (prediction_class == 0)
-                                ? "Hey, your mask isn't on!"
-                                : "Thank you for wearing your mask!";
+}
 
-  ci::gl::drawStringCentered(
-      prediction_line, glm::vec2(ci::app::getWindowWidth() / 2, ci::app::getWindowHeight() * 8.5 / 10),
-      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 20));
+void MaskadeClassifier::DrawMinigameBox() {
 
-  std::string score_line = "Try to score points by keeping the mask on your face! Your score is: " + std::to_string(minigame_score_);
+}
 
-  ci::gl::drawStringCentered(
-      score_line, glm::vec2(ci::app::getWindowWidth() / 2, ci::app::getWindowHeight() * 9.5 / 10),
-      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 35));  
+void MaskadeClassifier::DrawMinigameWinScreen() {
+  ci::Rectf background_color(glm::vec2(0, ci::app::getWindowHeight() / 4), glm::vec2(ci::app::getWindowWidth(), ci::app::getWindowHeight() * 3 / 4));
+
+  // Dark grey box
+  ci::gl::color(text_box_color_);
+  ci::gl::drawSolidRect(background_color);
+
+  // Reset brush for drawing images
+  ci::gl::color(ci::ColorT<float>().hex(0xffffff));
+
+  std::string win_message = "Game over! Your score: " + std::to_string(minigame_score_);
+
+    ci::gl::drawStringCentered(
+        win_message,
+        ci::app::getWindowCenter(),
+        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 10));
+}
+
+void MaskadeClassifier::ExecuteMinigameStep(int prediction) {
+  if (prediction != 0) {
+    ++minigame_score_;
+  }
 }
 
 }  // namespace maskade
