@@ -32,6 +32,10 @@ void MaskadeClassifier::setup() {
 void MaskadeClassifier::update() {
   // Read in the most recent snapshot from video feed to current image
   capture_ >> image_;
+  // Converts image data to OpenCV data type
+  image_.convertTo(image_, CV_32F);
+  // Normalizes the RGB values of the data in the image
+  image_ /= 255.0;
 }
 
 void MaskadeClassifier::draw() {
@@ -44,6 +48,23 @@ void MaskadeClassifier::draw() {
   DrawPrediction(prediction);
 }
 
+void MaskadeClassifier::keyDown(ci::app::KeyEvent event) {
+  switch (event.getCode()) {
+    case ci::app::KeyEvent::KEY_m: {
+      in_minigame_ = (in_minigame_) ? false : true;
+      break;
+    }
+    case ci::app::KeyEvent::KEY_r: {
+      // Reset the minigame
+      break;
+    }
+    case ci::app::KeyEvent::KEY_p: {
+
+      break;
+    }
+  }
+}
+
 void MaskadeClassifier::OpenCamera() {
   // Opens the default video feed accessible by OpenCV if possible
   capture_.open(0);
@@ -54,9 +75,7 @@ void MaskadeClassifier::OpenCamera() {
     update();
 
     // Set window size to match the size of the video feed
-    window_width_ = image_.cols;
-    window_height_ = image_.rows;
-    ci::app::setWindowSize(window_width_, window_height_);
+    ci::app::setWindowSize(image_.cols, image_.rows);
   }
 
   else {
@@ -72,13 +91,13 @@ void MaskadeClassifier::OpenCamera() {
 }
 
 void MaskadeClassifier::DrawImage() {
-  // Converts image data to OpenCV data type
-  image_.convertTo(image_, CV_32F);
-  // Normalizes the RGB values of the data in the image
-  image_ /= 255.0;
+  // Create separate Mat that is resized for drawing to the app's full dimensions
+  cv::Mat full_window_image;
+
+  cv::resize(image_, full_window_image, cv::Size(ci::app::getWindowWidth(), ci::app::getWindowHeight()));
 
   // Creates Cinder texture from OpenCV Mat
-  ci::gl::TextureRef texture = ci::gl::Texture::create(ci::fromOcv(image_));
+  ci::gl::TextureRef texture = ci::gl::Texture::create(ci::fromOcv(full_window_image));
   // Draw texture on the Cinder app
   ci::gl::draw(texture);
 }
@@ -117,24 +136,30 @@ float MaskadeClassifier::CalculatePrediction() {
 
 void MaskadeClassifier::DrawPrediction(int prediction_class) {
   // Draw background box so text can more easily be seen
-  ci::Rectf text_box(glm::vec2(window_width_ * 1 / 10, window_height_ * 8 / 10),
-                     glm::vec2(window_width_ * 9 / 10, window_height_));
+  ci::Rectf text_box(glm::vec2(ci::app::getWindowWidth() * 1 / 10, ci::app::getWindowHeight() * 8 / 10),
+                     glm::vec2(ci::app::getWindowWidth() * 9 / 10, ci::app::getWindowHeight()));
 
   // Dark grey box
-  ci::gl::color(ci::ColorAT<float>().hex(0xAB303030));
+  ci::gl::color(text_box_color_);
   ci::gl::drawSolidRoundedRect(text_box, 15);
 
   // Reset brush for drawing images
   ci::gl::color(ci::ColorT<float>().hex(0xffffff));
 
   // Determine message based on calculated classification
-  std::string output_line = (prediction_class == 0)
+  std::string prediction_line = (prediction_class == 0)
                                 ? "Hey, your mask isn't on!"
                                 : "Thank you for wearing your mask!";
 
   ci::gl::drawStringCentered(
-      output_line, glm::vec2(window_width_ / 2, window_height_ * 9 / 10),
-      font_color_, ci::Font(font_name_, window_height_ / 20));
+      prediction_line, glm::vec2(ci::app::getWindowWidth() / 2, ci::app::getWindowHeight() * 8.5 / 10),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 20));
+
+  std::string score_line = "Try to score points by keeping the mask on your face! Your score is: " + std::to_string(minigame_score_);
+
+  ci::gl::drawStringCentered(
+      score_line, glm::vec2(ci::app::getWindowWidth() / 2, ci::app::getWindowHeight() * 9.5 / 10),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 35));  
 }
 
 }  // namespace maskade
