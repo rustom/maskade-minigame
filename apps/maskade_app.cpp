@@ -1,6 +1,4 @@
 #include "maskade_classifier.hpp"
+#include "cinder/app/RendererGl.h"
 
-using ci::app::RendererGl;
-using maskade::MaskadeClassifier;
-
-CINDER_APP(MaskadeClassifier, RendererGl)
+CINDER_APP(maskade::MaskadeClassifier, ci::app::RendererGl)

@@ -28,7 +28,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #     add_compile_options(-Wall -Wpedantic -Werror)
 # endif()
 
-# include(FetchContent)
+include(FetchContent)
 
 # FetchContent_Declare(
 #   Catch2
@@ -37,16 +37,16 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # FetchContent_MakeAvailable(Catch2)
 
-# FetchContent_Declare(json
-#   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
-#   GIT_TAG v3.7.3)
+FetchContent_Declare(json
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
+  GIT_TAG v3.7.3)
 
-# FetchContent_GetProperties(json)
-# FetchContent_MakeAvailable(json)
-# if(NOT json_POPULATED)
-#   FetchContent_Populate(json)
-#   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
-# endif()
+FetchContent_GetProperties(json)
+FetchContent_MakeAvailable(json)
+if (NOT json_POPULATED)
+  FetchContent_Populate(json)
+  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # find_package( Boost 1.54 REQUIRED COMPONENTS system filesystem )
 # list( APPEND CINDER_LIBS_DEPENDS ${Boost_LIBRARIES} )
@@ -66,8 +66,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #         # And so on and on...
 #     endif()
 # endif()
-
-# LIBRARIES ( opencv_core opencv_highgui opencv_imgproc opencv_videoio )
 
 find_library(TENSORFLOW_LIB tensorflow HINT /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/lib)
 
@@ -115,6 +113,7 @@ ci_make_app(
         CINDER_PATH     ${CINDER_PATH}
         SOURCES         apps/maskade_app.cpp ${CORE_SOURCE_FILES} ${VISUALIZER_SOURCE_FILES}
         INCLUDES        include  # blocks/Cinder-OpenCV-master/include
+        LIBRARIES       nlohmann_json::nlohmann_json
         # BLOCKS          Cinder-OpenCV-master 
 )   
 
