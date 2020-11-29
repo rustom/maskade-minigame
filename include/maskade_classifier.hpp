@@ -3,7 +3,6 @@
 // This header MUST be included first (do not reorder includes)
 #include "opencv2/opencv.hpp"
 
-#include <string>
 #include "cinder/app/App.h"
 #include "cinder/gl/gl.h"
 #include "cppflow/cppflow.h"
@@ -65,7 +64,7 @@ class MaskadeClassifier : public ci::app::App {
    * prediction.
    *
    */
-  void DrawPrediction(float prediction_class);
+  void DrawPrediction(int prediction_class);
 
   // Relative path to the configuration JSON
   std::string config_path_ = "../../../../../../config/config.json";
