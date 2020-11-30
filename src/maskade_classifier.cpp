@@ -4,6 +4,7 @@
 #include "cinder/app/RendererGl.h"
 #include "nlohmann/json.hpp"
 #include "opencv2/core/mat.hpp"
+#include <random>
 
 namespace maskade {
 
@@ -29,6 +30,8 @@ void MaskadeClassifier::setup() {
 
   // Begin collecting video
   OpenCamera();
+
+  rect_ = cv::Rect(0, 0, 0, 0);
 }
 
 void MaskadeClassifier::update() {
@@ -38,22 +41,32 @@ void MaskadeClassifier::update() {
   image_.convertTo(image_, CV_32F);
   // Normalizes the RGB values of the data in the image
   image_ /= 255.0;
+  // Flip the image across the y axis
+  cv::flip(image_, image_, 1);
 }
 
-void MaskadeClassifier::draw() {
+void MaskadeClassifier::draw() { 
+  if (in_minigame_) {
+    DrawMinigameBox();
+  }
+
   // Executes the drawing and calculation heartbeat functions
   DrawImage();
 
   DrawTextBox();
 
+ 
   int prediction = CalculatePrediction();
 
   if (in_minigame_) {
     ExecuteMinigameStep(prediction);
     DrawScore(); 
+
     if (minigame_timer_.getSeconds() >= minigame_max_time_) {
       DrawMinigameWinScreen();
-    }    
+    }
+
+
     if (minigame_timer_.getSeconds() >= minigame_max_time_ + minigame_win_screen_time_) {
       minigame_timer_.start(0);
       minigame_score_ = 0;
@@ -151,6 +164,10 @@ int MaskadeClassifier::CalculatePrediction() {
   input_tensor = cppflow::resize_bilinear(
       input_tensor, cppflow::tensor({model_image_width_, model_image_height_}));
 
+  // for (auto item : model_.get_operations()) {
+  //   std::cout << item << std::endl;
+  // }
+
   // Get output probabilities from the model
   auto output = model_(input_tensor);
 
@@ -210,7 +227,28 @@ void MaskadeClassifier::DrawTextBox() {
 }
 
 void MaskadeClassifier::DrawMinigameBox() {
+  if (box_cooldown_ > 0) {
+    --box_cooldown_;
+    cv::rectangle(image_, rect_, cv::Scalar(255, 255, 0), 50, 8, 0);
+    return;
+  }
+  int margin = 100;
+  int box_height = 50;
+  int box_width = 100;
+  // Used to obtain a seed for the random number engine
+  std::random_device rd;   
+  // Gets random position from distribution
+  std::mt19937 gen(rd());  
+  // Distribution of possible x values
+  std::uniform_int_distribution<> width_dist(0, image_.cols - margin);
+  std::uniform_int_distribution<> height_dist(0, image_.rows- margin);
 
+  int xpos = width_dist(gen);
+  int ypos = height_dist(gen);
+
+  rect_ = cv::Rect(xpos, ypos, box_width, box_height);
+
+  box_cooldown_ = max_box_cooldown_;
 }
 
 void MaskadeClassifier::DrawMinigameWinScreen() {

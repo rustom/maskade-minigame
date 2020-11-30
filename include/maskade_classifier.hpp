@@ -118,11 +118,16 @@ class MaskadeClassifier : public ci::app::App {
   // An int representing the score of the player in the minigame
   int minigame_score_ = 0;
   // The amount of time the user gets to play the minigame
-  int minigame_max_time_ = 10;
+  int minigame_max_time_ = 0;
   // A timer for the minigame 
   ci::Timer minigame_timer_;
   // The amount of time the win screen is displayed after the minigame
   int minigame_win_screen_time_ = 4;
+  // An OpenCV rectangle representing the mask
+  cv::Rect rect_;
+
+  int box_cooldown_ = 0;
+  int max_box_cooldown_ = 20;
 };
 
 }  // namespace maskade

@@ -3,5 +3,5 @@
   "model_image_height": 224,
   "font": "IBM Plex Mono",
   "font_color": "0xFFBFBF", 
-  "minigame_max_time": 10
+  "minigame_max_time": 20
 }
