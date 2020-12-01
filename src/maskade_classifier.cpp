@@ -1,10 +1,11 @@
 #include "maskade_classifier.hpp"
 
+#include <random>
+
 #include "CinderOpenCV.hpp"
 #include "cinder/app/RendererGl.h"
 #include "nlohmann/json.hpp"
 #include "opencv2/core/mat.hpp"
-#include <random>
 
 namespace maskade {
 
@@ -21,6 +22,8 @@ void MaskadeClassifier::setup() {
   font_name_ = std::string(config["font"]);
   font_color_ = ci::ColorT<float>().hex(
       uint32_t(std::stoull(std::string(config["font_color"]), 0, 16)));
+  background_color_ = ci::ColorT<float>().hex(
+      uint32_t(std::stoull(std::string(config["background_color"]), 0, 16)));
 
   // Set dimensions for model input
   model_image_width_ = config["model_image_width"].get<int>();
@@ -46,8 +49,9 @@ void MaskadeClassifier::update() {
 }
 
 void MaskadeClassifier::draw() { 
+  // If in minigame mode, then draw the floating mask
   if (in_minigame_) {
-    DrawMinigameBox();
+    DrawMinigameMask();
   }
 
   // Executes the drawing and calculation heartbeat functions
@@ -201,7 +205,9 @@ void MaskadeClassifier::DrawScore() {
                   ci::app::getWindowHeight() * 8.5 / 10),
         font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
 
-    std::string time_line = "Seconds left: " + std::to_string(minigame_max_time_ - (int) minigame_timer_.getSeconds());
+    std::string time_line =
+        "Seconds left: " +
+        std::to_string(minigame_max_time_ - (int)minigame_timer_.getSeconds());
 
     ci::gl::drawStringCentered(
         time_line,
@@ -218,7 +224,7 @@ void MaskadeClassifier::DrawTextBox() {
                                ci::app::getWindowHeight()));
 
   // Dark grey box
-  ci::gl::color(text_box_color_);
+  ci::gl::color(background_color_);
   ci::gl::drawSolidRoundedRect(text_box, 15);
 
   // Reset brush for drawing images
@@ -226,36 +232,50 @@ void MaskadeClassifier::DrawTextBox() {
 
 }
 
-void MaskadeClassifier::DrawMinigameBox() {
-  if (box_cooldown_ > 0) {
-    --box_cooldown_;
-    cv::rectangle(image_, rect_, cv::Scalar(255, 255, 0), 50, 8, 0);
+void MaskadeClassifier::DrawMinigameMask() {
+  if (mask_cooldown_ > 0) {
+    --mask_cooldown_;
+    // cv::rectangle(image_, rect_, cv::Scalar(153/255.0, 144/255.0, 51/255.0), 50, 8, 0);
+
+    auto overlay = cv::imread("../../../../../../assets/face_mask_smaller.png");//cv::COLOR_BGRA2RGBA);
+
+    overlay.convertTo(overlay, CV_32F);
+
+    overlay /= 255.0; 
+
+    // overlay.copyTo(image_(cv::Rect(rect_.x, rect_.y, overlay.cols, overlay.rows)));
+
+    cv::addWeighted(image_, 0.5, overlay[0, 0, 0, 0], 0.3, 0, image_);
+
     return;
   }
+
   int margin = 100;
-  int box_height = 50;
-  int box_width = 100;
+  int box_height = 60;
+  int box_width = 120;
   // Used to obtain a seed for the random number engine
   std::random_device rd;   
   // Gets random position from distribution
   std::mt19937 gen(rd());  
   // Distribution of possible x values
-  std::uniform_int_distribution<> width_dist(0, image_.cols - margin);
-  std::uniform_int_distribution<> height_dist(0, image_.rows- margin);
+  std::uniform_int_distribution<> width_dist(margin, image_.cols - margin);
+  std::uniform_int_distribution<> height_dist(margin, image_.rows - margin);
 
   int xpos = width_dist(gen);
   int ypos = height_dist(gen);
 
   rect_ = cv::Rect(xpos, ypos, box_width, box_height);
 
-  box_cooldown_ = max_box_cooldown_;
+  mask_cooldown_ = max_box_cooldown_;
 }
 
 void MaskadeClassifier::DrawMinigameWinScreen() {
-  ci::Rectf background_color(glm::vec2(0, ci::app::getWindowHeight() / 4), glm::vec2(ci::app::getWindowWidth(), ci::app::getWindowHeight() * 3 / 4));
+  ci::Rectf background_color(
+      glm::vec2(0, ci::app::getWindowHeight() / 4),
+      glm::vec2(ci::app::getWindowWidth(), ci::app::getWindowHeight() * 3 / 4));
 
   // Dark grey box
-  ci::gl::color(text_box_color_);
+  ci::gl::color(background_color_);
   ci::gl::drawSolidRect(background_color);
 
   // Reset brush for drawing images
@@ -270,7 +290,7 @@ void MaskadeClassifier::DrawMinigameWinScreen() {
 }
 
 void MaskadeClassifier::ExecuteMinigameStep(int prediction) {
-  if (prediction != 0) {
+  if (prediction != 0 && minigame_timer_.getSeconds() < minigame_max_time_) {
     ++minigame_score_;
   }
 }
