@@ -7,7 +7,6 @@
 #include "cinder/gl/gl.h"
 #include "cppflow/cppflow.h"
 
-
 namespace maskade {
 
 class MaskadeClassifier : public ci::app::App {
@@ -78,7 +77,7 @@ class MaskadeClassifier : public ci::app::App {
 
   void DrawTextBox();
 
-  void DrawMinigameBox();
+  void DrawMinigameMask();
 
   void DrawMinigameWinScreen();
 
@@ -108,11 +107,7 @@ class MaskadeClassifier : public ci::app::App {
   // The Cinder color of the font 
   ci::ColorT<float> font_color_;
   // The Cinder color of the text box
-  ci::ColorT<float> text_box_color_ = ci::ColorT<float>().hex(0x303030);
-  // The width of the window
-  // size_t window_width_ = 0;
-  // // The height of the window
-  // size_t window_height_ = 0;
+  ci::ColorT<float> background_color_;
   // A boolean that defines whether the app is in "minigame" state
   bool in_minigame_ = false;
   // An int representing the score of the player in the minigame
@@ -125,8 +120,9 @@ class MaskadeClassifier : public ci::app::App {
   int minigame_win_screen_time_ = 4;
   // An OpenCV rectangle representing the mask
   cv::Rect rect_;
-
-  int box_cooldown_ = 0;
+  // A cooldown for the floating mask "box" 
+  int mask_cooldown_ = 0;
+  // The maximum value for the mask cooldown
   int max_box_cooldown_ = 20;
 };
 
