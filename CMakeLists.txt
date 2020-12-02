@@ -1,5 +1,3 @@
-# set(CMAKE_C_COMPILER /usr/bin/gcc)
-# set(CMAKE_CXX_COMPILER /usr/bin/g++)
 if(APPLE)
   set(CMAKE_FIND_FRAMEWORK LAST)
   set(CMAKE_FIND_APPBUNDLE LAST)
@@ -13,7 +11,6 @@ project(ideal-gas VERSION 0.1.0)
 # set(CMAKE_FIND_APPBUNDLE LAST)
 # endif()
 
-# Let's nicely support folders in IDE's
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # include(CTest)
@@ -72,9 +69,6 @@ find_library(TENSORFLOW_LIB tensorflow HINT /Users/rustomichhaporia/GitHub/libte
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-
-
-
 set(OpenCV_DIR "/Users/rustomichhaporia/GitHub/build_opencv")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -83,44 +77,30 @@ find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui videoio)
 add_library(opencv INTERFACE)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-
-
 get_filename_component(CINDER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../" ABSOLUTE)
 get_filename_component(APP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/" ABSOLUTE)
 
 include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
 include("/Users/rustomichhaporia/GitHub/Cinder/lib/macosx/DEBUG/cinderConfig.cmake")
-list(APPEND CORE_SOURCE_FILES   
+list(APPEND SOURCE_FILES   
     src/maskade_classifier.cpp
-    # src/core/particle_container.cc
-    # src/core/particle.cc
-    # src/core/histogram.cc
-)
-
-list(APPEND VISUALIZER_SOURCE_FILES  
-    # src/visualizer/ideal_gas_visualizer.cc
 )
 
 list(APPEND TEST_FILES      
-    # test/test_main.cc
-    # test/test_particle_container.cc
-    # test/test_histogram.cc
 )
-
 
 ci_make_app(
         APP_NAME        maskade-visualizer
         CINDER_PATH     ${CINDER_PATH}
-        SOURCES         apps/maskade_app.cpp ${CORE_SOURCE_FILES} ${VISUALIZER_SOURCE_FILES}
-        INCLUDES        include  # blocks/Cinder-OpenCV-master/include
+        SOURCES         apps/maskade_app.cpp ${SOURCE_FILES}
+        INCLUDES        include  
         LIBRARIES       nlohmann_json::nlohmann_json
-        # BLOCKS          Cinder-OpenCV-master 
 )   
 
 target_link_libraries(opencv INTERFACE ${OpenCV_LIBS})
 target_link_libraries(maskade-visualizer ${OpenCV_LIBS})
 
-target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow2/include/ /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
+target_include_directories(maskade-visualizer PRIVATE /Users/rustomichhaporia/GitHub/cppflow2/include /Users/rustomichhaporia/GitHub/libtensorflow-cpu-darwin-x86_64-2.3.1/include)
 target_link_libraries (maskade-visualizer "${TENSORFLOW_LIB}")
 
 # ci_make_app(
