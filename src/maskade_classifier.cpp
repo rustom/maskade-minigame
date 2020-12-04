@@ -59,7 +59,6 @@ void MaskadeClassifier::draw() {
 
   DrawTextBox();
 
- 
   int prediction = CalculatePrediction();
 
   if (in_minigame_) {
@@ -235,22 +234,16 @@ void MaskadeClassifier::DrawTextBox() {
 void MaskadeClassifier::DrawMinigameMask() {
   if (mask_cooldown_ > 0) {
     --mask_cooldown_;
-    // cv::rectangle(image_, rect_, cv::Scalar(153/255.0, 144/255.0, 51/255.0), 50, 8, 0);
+    cv::Mat mask = cv::imread("../../../../../../assets/face_mask.jpeg", cv::IMREAD_UNCHANGED);
+    mask.convertTo(mask, CV_32F);
+    mask /= 255.0; 
 
-    auto overlay = cv::imread("../../../../../../assets/face_mask_smaller.png");//cv::COLOR_BGRA2RGBA);
-
-    overlay.convertTo(overlay, CV_32F);
-
-    overlay /= 255.0; 
-
-    // overlay.copyTo(image_(cv::Rect(rect_.x, rect_.y, overlay.cols, overlay.rows)));
-
-    cv::addWeighted(image_, 0.5, overlay[0, 0, 0, 0], 0.3, 0, image_);
+    cv::addWeighted(image_(cv::Rect(rect_.x, rect_.y, mask.cols, mask.rows)), 0.1, mask, 0.9, 0, image_(cv::Rect(rect_.x, rect_.y, mask.cols, mask.rows)));
 
     return;
   }
 
-  int margin = 100;
+  int margin = 200;
   int box_height = 60;
   int box_width = 120;
   // Used to obtain a seed for the random number engine
@@ -271,8 +264,8 @@ void MaskadeClassifier::DrawMinigameMask() {
 
 void MaskadeClassifier::DrawMinigameWinScreen() {
   ci::Rectf background_color(
-      glm::vec2(0, ci::app::getWindowHeight() / 4),
-      glm::vec2(ci::app::getWindowWidth(), ci::app::getWindowHeight() * 3 / 4));
+      glm::vec2(0, 0),
+      glm::vec2(ci::app::getWindowWidth(), ci::app::getWindowHeight()));
 
   // Dark grey box
   ci::gl::color(background_color_);
