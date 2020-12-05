@@ -49,7 +49,7 @@ void MaskadeClassifier::update() {
 }
 
 void MaskadeClassifier::draw() { 
-  // If in minigame mode, then draw the floating mask
+  // If in minigame mode, then draw the floating mask on the OpenCV video feed Mat
   if (in_minigame_) {
     DrawMinigameMask();
   }
@@ -57,48 +57,44 @@ void MaskadeClassifier::draw() {
   // Executes the drawing and calculation heartbeat functions
   DrawImage();
 
+  // Draws the text box for printing information
   DrawTextBox();
 
+  // Calculates the classification of the video feed as having a mask on or not
   int prediction = CalculatePrediction();
 
+  // Calls the correct drawing and scoring methods for the minigame
   if (in_minigame_) {
     ExecuteMinigameStep(prediction);
-    DrawScore(); 
-
-    if (minigame_timer_.getSeconds() >= minigame_max_time_) {
-      DrawMinigameWinScreen();
-    }
-
-
-    if (minigame_timer_.getSeconds() >= minigame_max_time_ + minigame_win_screen_time_) {
-      minigame_timer_.start(0);
-      minigame_score_ = 0;
-    }
   }
-
+  
+  // Draws plain prediction if not in minigame
   else {
     DrawPrediction(prediction); 
   }
 }
 
 void MaskadeClassifier::keyDown(ci::app::KeyEvent event) {
+  // Switch statement for different types of input
   switch (event.getCode()) {
+    // Press m key to open minigame
     case ci::app::KeyEvent::KEY_m: {
+      // If already in minigame, close minigame
       in_minigame_ = (in_minigame_) ? false : true;
-      // minigame_timer_ = (in_minigame_) ? minigame_max_time_ : 0.0;
+
       if (in_minigame_) {
         minigame_timer_.start(0);
       } 
       minigame_score_ = 0;
+      
       break;
     }
+
+    // Press r key to reset the minigame time and score if in the middle of a game
     case ci::app::KeyEvent::KEY_r: {
       // Resets the minigame score and time
       minigame_timer_.start(0);
       minigame_score_ = 0;
-      break;
-    }
-    case ci::app::KeyEvent::KEY_p: {
       break;
     }
   }
@@ -167,17 +163,11 @@ int MaskadeClassifier::CalculatePrediction() {
   input_tensor = cppflow::resize_bilinear(
       input_tensor, cppflow::tensor({model_image_width_, model_image_height_}));
 
-  // for (auto item : model_.get_operations()) {
-  //   std::cout << item << std::endl;
-  // }
-
   // Get output probabilities from the model
   auto output = model_(input_tensor);
 
   // Select the class with the highest likelihood
-  auto argmax = cppflow::arg_max(output, 1).get_data<int>();
-
-  return argmax[0];
+  return cppflow::arg_max(output, 1).get_data<int>()[0];
 }
 
 void MaskadeClassifier::DrawPrediction(int prediction_class) {
@@ -194,25 +184,27 @@ void MaskadeClassifier::DrawPrediction(int prediction_class) {
 }
 
 void MaskadeClassifier::DrawScore() {
-      std::string score_line =
-        "Score points by keeping your mask on! Your score is: " +
-        std::to_string(minigame_score_);
+  // Draws score and time info during the minigame
 
-    ci::gl::drawStringCentered(
-        score_line,
-        glm::vec2(ci::app::getWindowWidth() / 2,
-                  ci::app::getWindowHeight() * 8.5 / 10),
-        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
+  std::string score_line =
+      "Score points by keeping your mask on! Your score is: " +
+      std::to_string(minigame_score_);
 
-    std::string time_line =
-        "Seconds left: " +
-        std::to_string(minigame_max_time_ - (int)minigame_timer_.getSeconds());
+  ci::gl::drawStringCentered(
+      score_line,
+      glm::vec2(ci::app::getWindowWidth() / 2,
+                ci::app::getWindowHeight() * 8.5 / 10),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
 
-    ci::gl::drawStringCentered(
-        time_line,
-        glm::vec2(ci::app::getWindowWidth() / 2,
-                  ci::app::getWindowHeight() * 9.5 / 10),
-        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
+  std::string time_line =
+      "Seconds left: " +
+      std::to_string(minigame_max_time_ - (int)minigame_timer_.getSeconds());
+
+  ci::gl::drawStringCentered(
+      time_line,
+      glm::vec2(ci::app::getWindowWidth() / 2,
+                ci::app::getWindowHeight() * 9.5 / 10),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 25));
 }
 
 void MaskadeClassifier::DrawTextBox() {
@@ -232,20 +224,23 @@ void MaskadeClassifier::DrawTextBox() {
 }
 
 void MaskadeClassifier::DrawMinigameMask() {
+  // If it is not yet time to switch the position, then draw the mask
   if (mask_cooldown_ > 0) {
-    --mask_cooldown_;
+    // Create OpenCV mask for mask image
     cv::Mat mask = cv::imread("../../../../../../assets/face_mask.jpeg", cv::IMREAD_UNCHANGED);
     mask.convertTo(mask, CV_32F);
     mask /= 255.0; 
 
+    // Add weighted sum overlay of mask (mask is partially transparent) 
     cv::addWeighted(image_(cv::Rect(rect_.x, rect_.y, mask.cols, mask.rows)), 0.1, mask, 0.9, 0, image_(cv::Rect(rect_.x, rect_.y, mask.cols, mask.rows)));
+    
+    // Reduce time by one frame
+    --mask_cooldown_;
 
     return;
   }
 
   int margin = 200;
-  int box_height = 60;
-  int box_width = 120;
   // Used to obtain a seed for the random number engine
   std::random_device rd;   
   // Gets random position from distribution
@@ -254,11 +249,9 @@ void MaskadeClassifier::DrawMinigameMask() {
   std::uniform_int_distribution<> width_dist(margin, image_.cols - margin);
   std::uniform_int_distribution<> height_dist(margin, image_.rows - margin);
 
-  int xpos = width_dist(gen);
-  int ypos = height_dist(gen);
+  rect_ = cv::Rect(width_dist(gen), height_dist(gen), 0, 0);
 
-  rect_ = cv::Rect(xpos, ypos, box_width, box_height);
-
+  // Reset cooldown for moving position
   mask_cooldown_ = max_box_cooldown_;
 }
 
@@ -274,17 +267,33 @@ void MaskadeClassifier::DrawMinigameWinScreen() {
   // Reset brush for drawing images
   ci::gl::color(ci::ColorT<float>().hex(0xffffff));
 
+  // Display final score at the end of each minigame
   std::string win_message = "Game over! Your score: " + std::to_string(minigame_score_);
 
-    ci::gl::drawStringCentered(
-        win_message,
-        ci::app::getWindowCenter(),
-        font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 10));
+  ci::gl::drawStringCentered(
+      win_message,
+      ci::app::getWindowCenter(),
+      font_color_, ci::Font(font_name_, ci::app::getWindowHeight() / 10));
 }
 
 void MaskadeClassifier::ExecuteMinigameStep(int prediction) {
+  // Adds one to score if the user is classified as having the mask on top of their face
   if (prediction != 0 && minigame_timer_.getSeconds() < minigame_max_time_) {
     ++minigame_score_;
+  }
+
+  // Draws the score on the screen during the minigame
+  DrawScore(); 
+
+  // Draw win screen temporarily at end of game
+  if (minigame_timer_.getSeconds() >= minigame_max_time_) {
+    DrawMinigameWinScreen();
+  }
+
+  // Restart the game after the win screen timeout
+  if (minigame_timer_.getSeconds() >= minigame_max_time_ + minigame_win_screen_time_) {
+    minigame_timer_.start(0);
+    minigame_score_ = 0;
   }
 }
 
