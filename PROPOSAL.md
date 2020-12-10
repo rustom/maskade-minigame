@@ -9,12 +9,12 @@ Currently, I am working on building an empty program that uses the OpenCV Cinder
 ## Outline
 
 Week 1: 
-- [ ] Building the OpenCV Cinderblock
-- [ ] Setting up a Cinder app that can read in the camera's video feed
+- [x] Building the OpenCV Cinderblock
+- [x] Setting up a Cinder app that can read in the camera's video feed
 
 Week 2: 
-- [ ] Using a downloaded classification model that is pretrained to determine whether or not the user is wearing a face covering
-- [ ] Using Cinder to draw a message explaining the results and desired action ("put on a mask!") on top of the video feed depending upon the results of the live classification
+- [x] Using a downloaded classification model that is pretrained to determine whether or not the user is wearing a face covering
+- [x] Using Cinder to draw a message explaining the results and desired action ("put on a mask!") on top of the video feed depending upon the results of the live classification
 
 Week 3: 
 - [ ] Use Cinder to detect the color of the mask
