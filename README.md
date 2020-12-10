@@ -27,3 +27,13 @@ The program can be cloned and run locally, but it requires several libraries to 
 | [OpenCV for C++](https://docs.opencv.org/master/d9/df8/tutorial_root.html) | Connects C++ to your computer's camera and facilitates image data operations | Y | 4.5.0 |
 | [OpenCV Cinderblock](https://github.com/cinder/Cinder-OpenCV) | Converts OpenCV image matrices to textures that Cinder can display | N | 2.4.9 |
 | [JSON for C++](https://github.com/nlohmann/json) | Gives Cinder the ability to read the JSON configuration file | N | 3.9.1 |
+
+## Usage
+
+The above libraries can be installed using `brew install` or via direct download. Once the appropriate libraries have been installed and built, the `CMakeLists.txt` file can be used to link them. Simply replace the corresponding file paths with your local paths to the libraries. 
+
+Finally, the `CMakeLists.txt` file can be used to build the project to a build folder of your choosing a C++ compiler of your choosing. The `maskade-visualizer` target should be run afterwards. This can either be accomplished through the command line or using an IDE or text editor with support for C++ and `CMake`, such as [CLion](https://www.jetbrains.com/clion/) or [Visual Studio Code](https://code.visualstudio.com/). 
+
+This project was developed on MacOS 11.1 with the `clang` 12.0.0 compiler, but it can be expected to work on Windows or Linux, or with a different compiler such as `gcc`. An MIT License is included. It was created during my time at the University of Illinois at Urbana-Champaign for my CS 126: Software Design Studio class. 
+
+Please email me at rustom.ichhaporia@gmail.com with any questions or thoughts. Thank you! 
