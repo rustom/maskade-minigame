@@ -36,4 +36,4 @@ Finally, the `CMakeLists.txt` file can be used to build the project to a build f
 
 This project was developed on MacOS 11.1 with the `clang` 12.0.0 compiler, but it can be expected to work on Windows or Linux, or with a different compiler such as `gcc`. An MIT License is included. It was created during my time at the University of Illinois at Urbana-Champaign for my CS 126: Software Design Studio class. 
 
-Please email me at rustom.ichhaporia@gmail.com with any questions or thoughts. Thank you! 
+Please reach me at [rustom.dev](rustom.dev) or [rustom@rustom.dev](mailto:rustom@rustom.dev) with any questions or thoughts. Thank you! 
